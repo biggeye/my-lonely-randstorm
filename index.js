@@ -256,7 +256,9 @@ const startTime = performance.now();
 let count = 0;
 
 for (let timestamp = startTimeStamp; timestamp < endTimeStamp; timestamp++) {
-  // seeding old ranodm as we not sure which seed would have used by js engin. Its entirly luck buety is is in sequence and regenerates same sequence
+  // Seeding with an old random value, as we're unsure which seed was used by the JavaScript engine.
+  // It's entirely dependent on luck, as the sequence is deterministic and regenerates the same sequence.
+
   global.currentSeed = getRandomNumber(startTimeStamp, endTimeStamp);
   global.randomSeedTime = timestamp;
   global.randomSeedTime2 = global.randomSeedTime2;
