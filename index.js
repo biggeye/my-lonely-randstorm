@@ -3,6 +3,7 @@ const secp256k1 = require("secp256k1");
 const bs58check = require("bs58check");
 const fs = require("fs");
 const axios = require("axios");
+const { performance } = require("perf_hooks");
 const args = process.argv.slice(2);
 
 console.log("Arguments passed:", args);
@@ -74,8 +75,19 @@ class SimplePRNG {
   }
 }
 
-function getRandomNumber(min, max) {
-  return Math.floor(Math.random() * (max - min) + min);
+class SeededRandom {
+  constructor(seed) {
+    this.seed = seed;
+  }
+  
+  next() {
+    this.seed = (this.seed * 1664525 + 1013904223) % 4294967296;
+    return this.seed;
+  }
+  
+  range(min, max) {
+    return Math.floor((this.next() / 4294967296) * (max - min) + min);
+  }
 }
 
 class RNG {

@@ -1,11 +1,11 @@
 {
   "name": "mimic-bitcoinjslib-randstorm",
-  "version": "1.0.0",
-  "description": "brute force randstrom ethical use only!",
+  "version": "2.0.0",
+  "description": "Bitcoin key brute force tool with progress tracking, GPU acceleration, and web dashboard",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "ab"
+    "url": "https://github.com/biggeye/my-lonely-randstorm"
   },
   "keywords": [
     "randstrom",
@@ -15,16 +15,26 @@
     "btc",
     "bitcoin",
     "wallet",
-    "recovery"
+    "recovery",
+    "cuda",
+    "gpu"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "scripts": {
-    "start": "concurrently  \"node index.js 0 1733259991530 1733269991529\" \"node index.js 1 1733259991530 1733269991529\" \"node index.js 2 1733259991530 1733269991529\""
+    "start": "node supervisor.js config.example.json",
+    "start:gpu": "node supervisor-cuda.js config-gpu.example.json",
+    "dashboard": "node dashboard-server.js",
+    "legacy": "concurrently \"node index.js 0 1733259991530 1733269991529\" \"node index.js 1 1733259991530 1733269991529\" \"node index.js 2 1733259991530 1733269991529\""
   },
   "dependencies": {
     "axios": "^1.7.8",
     "bs58check": "^2.1.2",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
     "secp256k1": "^5.0.1"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
