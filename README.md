@@ -1,18 +1,33 @@
 # Mimic BitcoinJSLib Randstorm
 
-**Version:** 1.0.0
+**Version:** 2.0.0
 
 **Description:** This tool exploits a weakness in early Bitcoin wallets, specifically those created between 2011 and 2014, which may have used weak or predictable random number generators. Some of these wallets might be vulnerable to key prediction if the random seed was known or guessed, but this is not guaranteed. The tool is for educational purposes only and should **never** be used on real, production wallets. Always use secure cryptographic methods for key generation.
 
 ---
 
+## 🚀 New Features in v2.0
+
+- **Progress Tracking & Persistence:** Automatic checkpointing allows runs to be paused and resumed without losing progress
+- **Deterministic Execution:** Reproducible key generation for reliable resume capability
+- **Multi-Worker Architecture:** Supervisor process manages multiple CPU and GPU workers
+- **GPU Acceleration:** CUDA-based workers for faster key generation (requires CUDA-capable GPU)
+- **Web Dashboard:** Real-time monitoring of runs, workers, and results via web interface
+- **NDJSON Results:** Structured, line-delimited JSON output for easy parsing
+- **Atomic Checkpoints:** Corruption-proof progress saves using atomic file operations
+
+---
+
 ## Features
 
-- **Bitcoin Key Generation:** Generates Bitcoin private keys, public keys, and addresses based on random number generation.
-- **Custom Randomness Algorithms:** Simulate different random number generation techniques (e.g., `Math.random()`, custom PRNGs).
-- **Brute Force Search:** Searches for matching Bitcoin addresses from a predefined list of target addresses.
-- **Telegram Notifications:** Alerts you when a matching address is found, with detailed private key information.
-- **Multi-Process Execution:** Supports running multiple processes in parallel for faster brute-forcing.
+- **Bitcoin Key Generation:** Generates Bitcoin private keys, public keys, and addresses based on random number generation
+- **Custom Randomness Algorithms:** Simulate different random number generation techniques (e.g., `Math.random()`, custom PRNGs)
+- **Brute Force Search:** Searches for matching Bitcoin addresses from a predefined list of target addresses
+- **Telegram Notifications:** Alerts you when a matching address is found, with detailed private key information
+- **Multi-Process Execution:** Supports running multiple CPU and GPU processes in parallel for faster brute-forcing
+- **Progress Tracking:** Automatic checkpointing every 5 seconds (configurable)
+- **Resume Capability:** Resume interrupted runs from the last checkpoint
+- **Web Dashboard:** Monitor all runs, workers, and results in real-time
 
 ---
 
@@ -20,13 +35,18 @@
 
 1. [Installation](#installation)
 2. [Usage](#usage)
-   - [Running the Script](#running-the-script)
-   - [Choosing Random Algorithm](#choosing-random-algorithm)
-3. [Key Generation Logic](#key-generation-logic)
-4. [Important Notes](#important-notes)
-5. [Security Considerations](#security-considerations)
-6. [License](#license)
-7. [Disclaimer](#disclaimer)
+   - [Quick Start](#quick-start)
+   - [Configuration](#configuration)
+   - [Running with CPU Workers](#running-with-cpu-workers)
+   - [Running with GPU Workers](#running-with-gpu-workers)
+   - [Resuming a Run](#resuming-a-run)
+   - [Web Dashboard](#web-dashboard)
+3. [Architecture](#architecture)
+4. [Key Generation Logic](#key-generation-logic)
+5. [Important Notes](#important-notes)
+6. [Security Considerations](#security-considerations)
+7. [License](#license)
+8. [Disclaimer](#disclaimer)
 
 ---
 
@@ -48,39 +68,183 @@ To get started, follow these steps:
 
 ## Usage
 
-### Running the Script
+### Quick Start
 
-To start the brute force key generation process, use the following command:
-`npm start`
+1. **Create a configuration file** (or use the provided examples):
+   ```bash
+   cp config.example.json my-config.json
+   ```
 
-### Running the Script (multi Process using concurrently)
+2. **Edit the configuration** to set your parameters:
+   - `algo`: Algorithm choice (0, 1, or 2)
+   - `startTs`: Start timestamp in milliseconds
+   - `endTs`: End timestamp in milliseconds
+   - `workerCount`: Number of CPU workers
+   - `cudaWorkerCount`: Number of GPU workers (optional)
+   - `targetAddresses`: Bitcoin addresses to search for
 
-`concurrently \"node index.js 0 1733259991530 1733269991529\"  \"node index.js 1 1733259991530 1733269991529\"  \"node index.js 2 1733259991530 1733269991529\"`
+3. **Start the run:**
+   ```bash
+   npm start
+   ```
 
-This will run the script with multiple processes, each using different random number generation algorithms. You can also pass custom arguments directly from the command line.
+4. **Start the web dashboard** (in a separate terminal):
+   ```bash
+   npm run dashboard
+   ```
+   Then open http://localhost:3000/dashboard.html in your browser.
 
-The arguments for the script are:
+### Configuration
 
-1.  **Old Random Algorithm choice (0, 1, or 2)**
-2.  **Start timestamp in milliseconds**
-3.  **End timestamp in milliseconds**
+Configuration files are JSON format with the following structure:
 
-For example, to run with algorithm 1 between two timestamps, use:
-`node index.js 1 1733259991530 1733269991529`
+```json
+{
+  "runId": "my-run-1",
+  "algo": 0,
+  "startTs": 1733259991530,
+  "endTs": 1733269991529,
+  "workerCount": 2,
+  "cudaWorkerCount": 0,
+  "runSeed": 12345,
+  "targetAddresses": {
+    "183RJpEcTPtr4kCRLeAfLNTnFLxjRFa29J": true,
+    "1HhZ9gUMD7qcdkQXZWUdwfajCZ92t8eh9W": true
+  },
+  "telegramChatId": "",
+  "telegramSecret": "",
+  "checkpointIntervalMs": 5000
+}
+```
 
-### Choosing Random Algorithm
+**Parameters:**
+- `runId`: Unique identifier for this run
+- `algo`: Random algorithm (0 = randomv8, 1 = randomFF, 2 = randomFF2)
+- `startTs`/`endTs`: Timestamp range to search (milliseconds)
+- `workerCount`: Number of CPU worker processes
+- `cudaWorkerCount`: Number of GPU worker processes (requires CUDA)
+- `runSeed`: Seed for deterministic random number generation
+- `targetAddresses`: Object with Bitcoin addresses as keys
+- `telegramChatId`/`telegramSecret`: Optional Telegram bot credentials
+- `checkpointIntervalMs`: How often to save progress (default: 5000ms)
 
-You can choose from three different random number generation algorithms by specifying the first argument: (I have no idea which algo was being used and when. do your research!)
+### Running with CPU Workers
 
-1.  **Algorithm 0:** Uses a simple PRNG based on a linear congruential generator.
-2.  **Algorithm 1:** Another PRNG using a different randomness formula.
-3.  **Algorithm 2:** A third custom random number generator used in Spider Monkey (not sure exact year).
+Run with CPU workers only:
 
-To choose a different algorithm, modify the first argument in `npm start` or directly pass it when running the script.
+```bash
+node supervisor.js my-config.json
+```
 
-### Telegram Notifications
+Or use the npm script:
+```bash
+npm start
+```
 
-If configured, the script will send notifications to a Telegram bot when it finds a matching Bitcoin address. To enable notifications, set the **Chat ID** and **Secret Token** for your Telegram bot in the code (`telegramChatId` and `telegramSecret`).
+### Running with GPU Workers
+
+Run with both CPU and GPU workers:
+
+```bash
+node supervisor-cuda.js config-gpu.example.json
+```
+
+Or use the npm script:
+```bash
+npm run start:gpu
+```
+
+**Requirements for GPU workers:**
+- CUDA-capable GPU
+- CUDA toolkit installed
+- Python 3 with numpy, numba, and pysecp256k1
+
+### Resuming a Run
+
+If a run is interrupted, you can resume it from the last checkpoint:
+
+```bash
+node supervisor.js --resume <runId>
+```
+
+Or for GPU runs:
+```bash
+node supervisor-cuda.js --resume <runId>
+```
+
+The run will continue from where it left off, using the saved checkpoint files in the `state/` directory.
+
+### Web Dashboard
+
+Start the web dashboard server:
+
+```bash
+npm run dashboard
+```
+
+Then open your browser to:
+```
+http://localhost:3000/dashboard.html
+```
+
+The dashboard provides:
+- Real-time metrics (total runs, active runs, keys processed, KPS)
+- List of all runs with status and progress
+- Per-worker statistics
+- Found keys display
+- Auto-refresh every 5 seconds
+
+---
+
+## Architecture
+
+The new architecture consists of several components:
+
+### Components
+
+1. **Supervisor (`supervisor.js` / `supervisor-cuda.js`)**
+   - Manages worker processes
+   - Handles checkpointing and resume
+   - Aggregates metrics
+   - Responds to SIGINT/SIGTERM for graceful shutdown
+
+2. **Worker (`worker.js`)**
+   - CPU-based key generation
+   - Deterministic cursor-based iteration
+   - Periodic progress reporting via IPC
+   - Atomic checkpoint saves
+
+3. **CUDA Worker (`cuda-worker.py`)**
+   - GPU-accelerated key generation
+   - Compatible with supervisor architecture
+   - Same checkpoint/resume protocol as CPU workers
+
+4. **Dashboard Server (`dashboard-server.js`)**
+   - Express-based REST API
+   - Serves metrics, run status, and results
+   - Static file serving for web UI
+
+5. **Web Dashboard (`public/dashboard.html`)**
+   - Real-time monitoring interface
+   - Progress visualization
+   - Worker statistics
+   - Results display
+
+### Directory Structure
+
+```
+my-lonely-randstorm/
+├── runs/              # Run manifests (configuration snapshots)
+├── state/             # Worker checkpoint files
+├── results/           # Found keys (NDJSON format)
+├── public/            # Web dashboard static files
+├── worker.js          # CPU worker implementation
+├── cuda-worker.py     # GPU worker implementation
+├── supervisor.js      # CPU supervisor
+├── supervisor-cuda.js # CPU+GPU supervisor
+├── dashboard-server.js # Web API server
+└── config.example.json # Example configuration
+```
 
 ---
 
@@ -121,6 +285,38 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Disclaimer
 
 This tool is for **educational purposes only**. By using this software, you acknowledge that you are using it responsibly and ethically. Unauthorized or malicious use may result in legal consequences, and the author(s) will not be held responsible for any damages arising from its use.
+
+## Legacy Mode
+
+The original `index.js` implementation is still available for backward compatibility:
+
+```bash
+npm run legacy
+```
+
+This runs the old multi-process approach using `concurrently`. However, it lacks progress tracking, checkpointing, and resume capability.
+
+---
+
+## Changelog
+
+### v2.0.0
+- Added progress tracking and checkpointing
+- Implemented deterministic cursor-based iteration
+- Added supervisor/worker architecture
+- Integrated CUDA GPU acceleration
+- Built web dashboard for monitoring
+- Fixed bugs in original implementation (Math.random, uninitialized variables, file writes)
+- Added resume capability
+- Converted results to NDJSON format
+- Added atomic checkpoint saves
+
+### v1.0.0
+- Initial release
+- Basic brute force functionality
+- Multi-process execution with concurrently
+
+---
 
 ## Support
 

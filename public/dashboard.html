@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randstorm Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #0f0f23;
+            color: #cccccc;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #00ff41;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .metric-card {
+            background: #1a1a2e;
+            border: 1px solid #00ff41;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 10px;
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            color: #00ff41;
+            font-weight: bold;
+        }
+        
+        .runs-section {
+            margin-top: 40px;
+        }
+        
+        .runs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        h2 {
+            color: #00ff41;
+            font-size: 1.8em;
+        }
+        
+        .refresh-btn {
+            background: #00ff41;
+            color: #0f0f23;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            background: #00cc33;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.5);
+        }
+        
+        .run-card {
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+        
+        .run-card:hover {
+            border-color: #00ff41;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.1);
+        }
+        
+        .run-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .run-id {
+            font-size: 1.2em;
+            color: #00ff41;
+            font-weight: bold;
+        }
+        
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .status-running {
+            background: #00ff41;
+            color: #0f0f23;
+        }
+        
+        .status-completed {
+            background: #4169e1;
+            color: white;
+        }
+        
+        .status-stopped {
+            background: #ff4444;
+            color: white;
+        }
+        
+        .run-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            color: #fff;
+            font-weight: 500;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 30px;
+            background: #0f0f23;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 15px;
+            border: 1px solid #333;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff41, #00cc33);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f0f23;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .workers-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+        
+        .worker-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 0.9em;
+        }
+        
+        .worker-label {
+            color: #888;
+        }
+        
+        .worker-stats {
+            color: #00ff41;
+        }
+        
+        .results-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+        
+        .result-item {
+            background: #0f0f23;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 3px solid #00ff41;
+            font-family: monospace;
+            font-size: 0.85em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+        }
+        
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Randstorm Dashboard</h1>
+        
+        <div class="metrics-grid" id="metrics">
+            <div class="metric-card">
+                <div class="metric-label">Total Runs</div>
+                <div class="metric-value" id="totalRuns">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Active Runs</div>
+                <div class="metric-value" id="activeRuns">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Total Keys Processed</div>
+                <div class="metric-value" id="totalKeys">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Total KPS</div>
+                <div class="metric-value" id="totalKps">-</div>
+            </div>
+        </div>
+        
+        <div class="runs-section">
+            <div class="runs-header">
+                <h2>Runs</h2>
+                <button class="refresh-btn" onclick="loadData()">Refresh</button>
+            </div>
+            <div id="runs"></div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = window.location.origin;
+        
+        async function loadMetrics() {
+            try {
+                const response = await fetch(`${API_BASE}/api/metrics`);
+                const data = await response.json();
+                
+                document.getElementById('totalRuns').textContent = data.totalRuns;
+                document.getElementById('activeRuns').textContent = data.activeRuns;
+                document.getElementById('totalKeys').textContent = formatNumber(data.totalKeysProcessed);
+                document.getElementById('totalKps').textContent = formatNumber(data.totalKps.toFixed(2));
+            } catch (error) {
+                console.error('Error loading metrics:', error);
+            }
+        }
+        
+        async function loadRuns() {
+            try {
+                const response = await fetch(`${API_BASE}/api/runs`);
+                const runs = await response.json();
+                
+                const runsContainer = document.getElementById('runs');
+                
+                if (runs.length === 0) {
+                    runsContainer.innerHTML = '<div class="loading">No runs found</div>';
+                    return;
+                }
+                
+                const runsHTML = await Promise.all(runs.map(async (run) => {
+                    const statusResponse = await fetch(`${API_BASE}/api/runs/${run.runId}/status`);
+                    const status = await statusResponse.json();
+                    
+                    const resultsResponse = await fetch(`${API_BASE}/api/runs/${run.runId}/results`);
+                    const results = await resultsResponse.json();
+                    
+                    const statusClass = `status-${run.status}`;
+                    const progress = status.avgProgress || 0;
+                    
+                    let workersHTML = '';
+                    if (status.workers && status.workers.length > 0) {
+                        workersHTML = `
+                            <div class="workers-section">
+                                <div class="detail-label">Workers</div>
+                                ${status.workers.map(w => `
+                                    <div class="worker-item">
+                                        <span class="worker-label">Worker ${w.workerId || 'N/A'}</span>
+                                        <span class="worker-stats">${(w.progress || 0).toFixed(2)}% | ${formatNumber(w.keysProcessed || 0)} keys | ${(w.kps || 0).toFixed(2)} KPS</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    let resultsHTML = '';
+                    if (results && results.length > 0) {
+                        resultsHTML = `
+                            <div class="results-section">
+                                <div class="detail-label">Found Keys (${results.length})</div>
+                                ${results.slice(0, 5).map(r => `
+                                    <div class="result-item">
+                                        Address: ${r.address}<br>
+                                        Private Key: ${r.privateKey}<br>
+                                        Found: ${r.foundAt}
+                                    </div>
+                                `).join('')}
+                                ${results.length > 5 ? `<div class="detail-label" style="margin-top: 10px;">... and ${results.length - 5} more</div>` : ''}
+                            </div>
+                        `;
+                    }
+                    
+                    return `
+                        <div class="run-card">
+                            <div class="run-header">
+                                <div class="run-id">${run.runId}</div>
+                                <div class="status-badge ${statusClass}">${run.status.toUpperCase()}</div>
+                            </div>
+                            <div class="run-details">
+                                <div class="detail-item">
+                                    <div class="detail-label">Algorithm</div>
+                                    <div class="detail-value">${run.algo}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Workers</div>
+                                    <div class="detail-value">${run.workerCount} CPU${run.cudaWorkerCount ? ` + ${run.cudaWorkerCount} GPU` : ''}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Keys Processed</div>
+                                    <div class="detail-value">${formatNumber(status.totalKeysProcessed)}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">KPS</div>
+                                    <div class="detail-value">${formatNumber(status.avgKps.toFixed(2))}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Created</div>
+                                    <div class="detail-value">${new Date(run.createdAt).toLocaleString()}</div>
+                                </div>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: ${progress}%">
+                                    ${progress.toFixed(2)}%
+                                </div>
+                            </div>
+                            ${workersHTML}
+                            ${resultsHTML}
+                        </div>
+                    `;
+                }));
+                
+                runsContainer.innerHTML = runsHTML.join('');
+            } catch (error) {
+                console.error('Error loading runs:', error);
+                document.getElementById('runs').innerHTML = `<div class="error">Error loading runs: ${error.message}</div>`;
+            }
+        }
+        
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+        
+        async function loadData() {
+            await loadMetrics();
+            await loadRuns();
+        }
+        
+        loadData();
+        setInterval(loadData, 5000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "runId": "example-run-1",
+  "algo": 0,
+  "startTs": 1733259991530,
+  "endTs": 1733269991529,
+  "workerCount": 2,
+  "cudaWorkerCount": 0,
+  "runSeed": 12345,
+  "targetAddresses": {
+    "183RJpEcTPtr4kCRLeAfLNTnFLxjRFa29J": true,
+    "1HhZ9gUMD7qcdkQXZWUdwfajCZ92t8eh9W": true
+  },
+  "telegramChatId": "",
+  "telegramSecret": "",
+  "checkpointIntervalMs": 5000
+}

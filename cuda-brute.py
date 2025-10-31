@@ -110,7 +110,7 @@ def brute_force_kernel(start_ts, end_ts, target_hashes, found_flags, seeds_out):
 def main():
     # Example parameters (replace accordingly)
     START_TS = np.int64(1609459200)  # Jan 1, 2021
-    END_TS = np.int64(START9459200 + 1000000)
+    END_TS = np.int64(START_TS + 1000000)
     target_hash_list = [0x1234567890ABCDEF, 0xFEDCBA0987654321]
 
     # Prepare device buffers
